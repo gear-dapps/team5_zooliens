@@ -1,8 +1,13 @@
-use app_io::*;
+use app_io::{Action, Create, Error, Event, Mint};
+use ed25519_compact::{KeyPair, Seed};
 use gtest::{Log, Program, System};
 
+const SEED: [u8; 32] = [5u8; 32];
+
+const DATA: [u8; 32] = [9u8; 32];
+
 #[test]
-fn test() {
+fn create() {
     let system = System::new();
 
     system.init_logger();
@@ -12,51 +17,63 @@ fn test() {
 
     assert!(!result.main_failed());
 
-    result = program.send(2, PingPong::Pong);
+    let key_pair = KeyPair::from_seed(Seed::new(SEED));
 
-    assert!(result.log().is_empty());
+    let public_key = key_pair.pk;
+    let secret_key = key_pair.sk;
 
-    // meta_state()
+    let signature = secret_key.sign(&DATA, None);
 
-    // AppStateQueryReply::AllState
-
-    let mut expected_state = vec![];
-
-    for mut actor in 0..=100 {
-        actor += 2;
-        result = program.send(actor, PingPong::Ping);
-
-        assert!(result.contains(&Log::builder().payload(PingPong::Pong)));
-
-        expected_state.push((actor.into(), 1))
-    }
-
-    let mut state = if let StateQueryReply::AllState(state) =
-        program.meta_state(StateQuery::AllState).unwrap()
-    {
-        state
-    } else {
-        unreachable!();
+    let payload = Create {
+        signature: signature.to_vec(),
+        signed_data: DATA.to_vec(),
     };
 
-    expected_state.sort();
-    state.0.sort();
+    let action = Action::Create(payload);
 
-    assert_eq!(state.0, expected_state);
+    let result = program.send(0, action);
 
-    // AppStateQueryReply::PingCount
+    // assert!(result.contains(&Log::builder().payload( Event::Created(0))));
 
-    result = program.send(2, PingPong::Ping);
+    assert!(result.contains(&Log::builder().payload(Event::Created(0))));
+    // assert!(result.log().is_empty());
+}
 
-    assert!(result.contains(&Log::builder().payload(PingPong::Pong)));
+#[test]
+fn mint() {
+    let system = System::new();
 
-    let ping_count = if let StateQueryReply::PingCount(ping_count) =
-        program.meta_state(StateQuery::PingCount(2.into())).unwrap()
-    {
-        ping_count
-    } else {
-        unreachable!();
+    system.init_logger();
+
+    let program = Program::current(&system);
+    let mut result = program.send_bytes(2, []);
+
+    assert!(!result.main_failed());
+
+    let key_pair = KeyPair::from_seed(Seed::new(SEED));
+
+    let public_key = key_pair.pk;
+    let secret_key = key_pair.sk;
+
+    let signature = secret_key.sign(&DATA, None);
+
+    let payload = Create {
+        signature: signature.to_vec(),
+        signed_data: DATA.to_vec(),
     };
 
-    assert_eq!(ping_count, 2);
+    let action = Action::Create(payload);
+
+    let result = program.send(2, action);
+    assert!(result.contains(&Log::builder().payload(Event::Created(0))));
+
+    let result = program.send(
+        2,
+        Action::Mint(Mint {
+            id: 0,
+            private_key: secret_key.to_vec(),
+        }),
+    );
+
+    assert!(result.contains(&Log::builder().payload(Event::Minted)));
 }

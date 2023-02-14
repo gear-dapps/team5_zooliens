@@ -35,12 +35,7 @@ extern "C" fn init() {
 
 #[gstd::async_main]
 async fn main() {
-    process_handle()
-        .expect("Failed to load, decode, encode, or reply with `Zooliens` from `handle()`");
-}
-
-fn process_handle() -> Result<(), ContractError> {
-    let payload: Action = msg::load()?;
+    let payload: Action = msg::load().unwrap();
 
     let contract = static_mut_state();
     let result = match payload {
@@ -57,8 +52,11 @@ fn process_handle() -> Result<(), ContractError> {
         Action::AcceptOrder => todo!(),
         Action::LeaveChallenge(_) => todo!(),
     };
-    reply(result);
-    Ok(())
+    gstd::debug!("result {:?}", result);
+    match result {
+        Ok(event) => msg::reply(event, 0).expect("Can't send reply Event"),
+        Err(error) => msg::reply(error, 0).expect("Can't send reply Error"),
+    };
 }
 
 fn common_state() -> <ContractMetadata as Metadata>::State {
@@ -75,34 +73,17 @@ extern "C" fn meta_state() -> *const [i32; 2] {
 }
 
 #[no_mangle]
-extern "C" fn state() {
-    reply(common_state()).expect(
-        "Failed to encode or reply with `<ContractMetadata as Metadata>::State` from `state()`",
-    );
-}
+extern "C" fn state() {}
 
 #[no_mangle]
 extern "C" fn metahash() {
     let metahash: [u8; 32] = include!("../.metahash");
-
-    reply(metahash).expect("Failed to encode or reply with `[u8; 32]` from `metahash()`");
-}
-
-fn reply(payload: impl Encode) -> GstdResult<MessageId> {
-    msg::reply(payload, 0)
 }
 
 impl Contract {
     pub fn mint(&mut self, id: u64, private_key: &[u8]) -> Result<Event, Error> {
-        let (signature, signed_data) = match self.verification_data.get(&id) {
-            Some(res) => res,
-            None => return Err(Error::WrongId),
-        };
+        let secret_key = SecretKey::from_slice(private_key).map_err(|_| Error::IllegalKey)?;
 
-        let secret_key = match SecretKey::from_slice(private_key) {
-            Ok(sk) => sk,
-            Err(_) => return Err(Error::IllegalKey),
-        };
         match self.verification_data.get(&id) {
             Some((signature, data)) => secret_key
                 .public_key()
@@ -115,9 +96,11 @@ impl Contract {
     }
 
     pub fn create(&mut self, signature: &[u8], signed_data: Vec<u8>) -> Result<Event, Error> {
+        gstd::debug!("create() {:?}, {:?}", signature, signed_data);
         let signature = Signature::from_slice(signature).map_err(|_| Error::IllegalKey)?;
         let id = self.verification_data.len() as u64;
         self.verification_data.insert(id, (signature, signed_data));
+
         Ok(Event::Created(id))
     }
 

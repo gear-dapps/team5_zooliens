@@ -18,10 +18,11 @@ gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", branch = "s
 
 [dev-dependencies]
 app-state = { path = "state" }
-gtest = { git = "https://github.com/gear-tech/gear.git" }
+gtest = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
 gstd = { git = "https://github.com/gear-tech/gear.git", branch = "stable", features = ["debug"] }
 tokio = "1"
-gclient = { git = "https://github.com/gear-tech/gear.git" }
+#gclient = { git = "https://github.com/gear-tech/gear.git" }
+ed25519-compact = { version = "2.0.4", default-features = false }
 
 [features]
 # Used for inserting constants with WASM binaries (NOT paths) of the contract in
