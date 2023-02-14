@@ -10,6 +10,7 @@ app-io = { path = "io" }
 gstd = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
 gmeta = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
 hashbrown = "0.13"
+ed25519-compact = { version = "2.0.4", default-features = false }
 
 [build-dependencies]
 app-io = { path = "io" }
