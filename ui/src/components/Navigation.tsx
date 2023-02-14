@@ -1,13 +1,15 @@
 import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import styles from "@/styles/nav.module.css";
+import { useRouter } from "next/router";
+import Image from "next/image";
 
 const LOGO = "/zoo-logo-color.svg ";
 
 const navigation = [
-  { name: "Profile", href: "#", current: true },
-  { name: "Shop", href: "#", current: false },
-  { name: "Adventure", href: "#", current: false },
+  { name: "Profile", href: "/", current: true },
+  { name: "Shop", href: "/shop", current: false },
+  { name: "Adventure", href: "/adventure", current: false },
 ];
 
 function classNames(...classes: any) {
@@ -15,6 +17,12 @@ function classNames(...classes: any) {
 }
 
 export default function Navigation() {
+  const router = useRouter();
+  const navigate = (e: any, url: string) => {
+    e.preventDefault();
+    router.push(url);
+  };
+
   return (
     <Disclosure as="nav" className={styles.nav}>
       {({ open }: { open: boolean }) => (
@@ -34,27 +42,32 @@ export default function Navigation() {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <img
+                  <Image
                     className="block h-10 w-auto lg:hidden"
+                    height={50}
+                    width={50}
                     src={LOGO}
-                    alt="Your Company"
+                    alt="Zooliens Home Page"
+                    onClick={(e) => navigate(e, "/")}
                   />
-                  <img
+                  <Image
+                    height={50}
+                    width={50}
                     className="hidden h-10 w-auto lg:block"
                     src={LOGO}
-                    alt="Your Company"
+                    alt="Zooliens Home Page"
+                    onClick={(e) => navigate(e, "/")}
                   />
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
+                  {/* bg-gray-900 text-white  */}
                   <div className="flex space-x-4">
                     {navigation.map((item) => (
                       <a
                         key={item.name}
                         href={item.href}
                         className={classNames(
-                          item.current
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                          "text-gray-300 hover:bg-gray-700 hover:text-white",
                           "px-3 py-2 rounded-md text-sm font-medium"
                         )}
                         aria-current={item.current ? "page" : undefined}
