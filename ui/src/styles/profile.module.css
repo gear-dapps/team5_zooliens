@@ -1,4 +1,7 @@
-.main {
-    text-align: center;
-    padding-top: 8rem;
+.nav {
+    background-color: #0053FC;
+    padding: 1rem;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
 }
