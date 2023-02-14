@@ -1,11 +1,20 @@
-import styles from "@/styles/page.module.css";
-
 export default function Adventure() {
+  const list = [
+    { name: "Nikky", level: 10 },
+    { name: "Tuman", level: 7 },
+  ];
+
   return (
     <>
-      <main className={styles.main}>
-        <h1 className="text-3xl font-bold underline">Page Adventure</h1>
-      </main>
+      <div className="w-full bg-blue-300">
+        {list.map((item) => (
+          <div key={item.name} className={`flex flex-row p-2`}>
+            <div>
+              {item.name} level: {item.level} Fight
+            </div>
+          </div>
+        ))}
+      </div>
     </>
   );
 }

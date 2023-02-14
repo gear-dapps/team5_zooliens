@@ -3,20 +3,25 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import styles from "@/styles/nav.module.css";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import NoSSR from "./NoSSR";
 
 const LOGO = "/zoo-logo-color.svg ";
 
-const navigation = [
-  { name: "Profile", href: "/", current: true },
-  { name: "Shop", href: "/shop", current: false },
-  { name: "Adventure", href: "/adventure", current: false },
-];
+const navigation = [{ name: "Adventure", href: "/adventure", current: false }];
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Navigation() {
+export default function Nav() {
+  return (
+    <NoSSR>
+      <InnerNav />
+    </NoSSR>
+  );
+}
+
+export function InnerNav() {
   const router = useRouter();
   const navigate = (e: any, url: string) => {
     e.preventDefault();
@@ -53,7 +58,10 @@ export default function Navigation() {
                   <Image
                     height={50}
                     width={50}
-                    className="hidden h-10 w-auto lg:block"
+                    className={classNames(
+                      styles.logo,
+                      "hidden h-10 w-auto lg:block"
+                    )}
                     src={LOGO}
                     alt="Zooliens Home Page"
                     onClick={(e) => navigate(e, "/")}

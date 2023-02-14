@@ -4,3 +4,7 @@
 .nav {
     background-color: #0053FC;
 }
+
+.logo:hover {
+    cursor: pointer;
+}

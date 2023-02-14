@@ -1,0 +1,13 @@
+/**
+ * zoomlie styles
+ */
+
+.zoomlie {
+    display: flex;
+    flex-direction: column;
+    max-width: 30vw;
+    align-items: center;
+    margin: auto;
+    padding: 3rem 0;
+}
+
