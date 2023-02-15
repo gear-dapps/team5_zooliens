@@ -46,12 +46,12 @@ pub struct Create {
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug)]
 pub enum Event {
-    ProfileInfo(Account),
+    ProfileInfo(Monster),
     Claimed(u128),
     ReadyToChallenge,
     ChallengeResult,
     Created(u64),
-    Minted,
+    Minted(ActorId),
 }
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug, Default)]

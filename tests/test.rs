@@ -1,5 +1,6 @@
 use app_io::{Action, Create, Error, Event, Mint};
 use ed25519_compact::{KeyPair, Seed};
+use gstd::ActorId;
 use gtest::{Log, Program, RunResult, System};
 use nft_io::*;
 
@@ -25,15 +26,17 @@ fn create() {
     assert!(!result.main_failed());
 
     for (i, user) in USERS.iter().enumerate() {
-        init_nft(&system, *user, format!("Zoomlien {}", *user));
+        let nft_program = init_nft(&system, *user, format!("Zoomlien {}", *user));
+
         let key_pair = KeyPair::from_seed(Seed::new(SEED));
         let secret_key = key_pair.sk;
 
-        let signature = secret_key.sign(&DATA, None);
+        let data = nft_program.id().into_bytes();
+        let signature = secret_key.sign(&data, None);
 
         let payload = Create {
             signature: signature.to_vec(),
-            signed_data: DATA.to_vec(),
+            signed_data: data.to_vec(),
         };
 
         let action = Action::Create(payload);
@@ -58,15 +61,17 @@ fn mint() {
     assert!(!result.main_failed());
 
     for (i, user) in USERS.iter().enumerate() {
-        init_nft(&system, *user, format!("Zoomlien {}", *user));
+        let nft_program = init_nft(&system, *user, format!("Zoomlien {}", *user));
+
         let key_pair = KeyPair::from_seed(Seed::new(SEED));
         let secret_key = key_pair.sk;
 
-        let signature = secret_key.sign(&DATA, None);
+        let nft_contract_id_data = nft_program.id().into_bytes();
+        let signature = secret_key.sign(&nft_contract_id_data, None);
 
         let payload = Create {
             signature: signature.to_vec(),
-            signed_data: DATA.to_vec(),
+            signed_data: nft_contract_id_data.to_vec(),
         };
 
         let action = Action::Create(payload);
@@ -82,12 +87,12 @@ fn mint() {
                 private_key: secret_key.to_vec(),
             }),
         );
-
-        assert!(result.contains(&Log::builder().payload(Event::Minted)));
+        let actor_id = ActorId::from(nft_contract_id_data);
+        assert!(result.contains(&Log::builder().payload(Event::Minted(actor_id))));
     }
 }
 
-pub fn init_nft(sys: &System, owner: u64, name: String) {
+pub fn init_nft(sys: &System, owner: u64, name: String) -> Program {
     let nft_program = Program::from_file(sys, "./target/nft-0.2.5.opt.wasm");
 
     let res = nft_program.send(
@@ -134,6 +139,8 @@ pub fn init_nft(sys: &System, owner: u64, name: String) {
     );
 
     assert!(!res.main_failed());
+
+    nft_program
 }
 
 #[allow(dead_code)]

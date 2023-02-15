@@ -9,10 +9,12 @@ use gstd::{
 };
 use hashbrown::HashMap;
 
+type EncodedNft = Vec<u8>;
+
 #[derive(Clone, Debug, Default)]
 pub struct Contract {
-    verification_data: HashMap<u64, (Signature, Vec<u8>)>,
-    accounts: HashMap<ActorId, Account>,
+    verification_data: HashMap<u64, (Signature, EncodedNft)>,
+    accounts: HashMap<ActorId, Monster>,
     farms: HashMap<ActorId, Farm>,
     arena: HashMap<ActorId, Option<ActorId>>,
     leader_board: HashMap<ActorId, u128>,
@@ -85,21 +87,43 @@ impl Contract {
         let secret_key = SecretKey::from_slice(private_key).map_err(|_| Error::IllegalKey)?;
 
         match self.verification_data.get(&id) {
-            Some((signature, data)) => secret_key
-                .public_key()
-                .verify(data, &signature)
-                .map_err(|_| Error::IllegalKey)?,
-            None => return Err(Error::IllegalKey),
-        };
+            Some((signature, data)) => {
+                secret_key
+                    .public_key()
+                    .verify(data, &signature)
+                    .map_err(|_| Error::IllegalKey)?;
 
-        Ok(Event::Minted)
+                let player_id = msg::source();
+
+                let nft_contract_id =
+                    ActorId::from_slice(data).expect("Can't create NFT-contract id from slice");
+
+                let monster = Monster {
+                    nft_contract_id,
+                    inventory: Default::default(),
+                    name: Default::default(),
+                    characteristics: Default::default(),
+                    energy: 100,
+                    level: 0,
+                };
+                // self.accounts.insert(player_id, v)
+                Ok(Event::Minted(nft_contract_id))
+            }
+            None => return Err(Error::IllegalKey),
+        }
+
     }
 
-    pub fn create(&mut self, signature: &[u8], signed_data: Vec<u8>) -> Result<Event, Error> {
-        gstd::debug!("create() {:?}, {:?}", signature, signed_data);
+    pub fn create(
+        &mut self,
+        signature: &[u8],
+        signed_nft_program_id: Vec<u8>,
+    ) -> Result<Event, Error> {
+        gstd::debug!("create() {:?}, {:?}", signature, signed_nft_program_id);
         let signature = Signature::from_slice(signature).map_err(|_| Error::IllegalKey)?;
         let id = self.verification_data.len() as u64;
-        self.verification_data.insert(id, (signature, signed_data));
+        self.verification_data
+            .insert(id, (signature, signed_nft_program_id));
 
         Ok(Event::Created(id))
     }
