@@ -62,7 +62,12 @@ async fn main() {
 }
 
 fn common_state() -> <ContractMetadata as Metadata>::State {
-    State {}
+    let monsters = static_mut_state()
+        .accounts
+        .iter()
+        .map(|(k, v)| (*k, v.clone()))
+        .collect();
+    State { monsters }
 }
 
 #[no_mangle]

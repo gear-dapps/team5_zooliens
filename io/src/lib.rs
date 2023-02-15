@@ -15,7 +15,9 @@ impl Metadata for ContractMetadata {
 }
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug)]
-pub struct State {}
+pub struct State {
+    pub monsters: Vec<(ActorId, Monster)>,
+}
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug)]
 pub enum Action {
