@@ -15,9 +15,11 @@ interface IZoomlie {
 
 export function Zoomlie({ zoomlie }: { zoomlie: IZoomlie }) {
   return (
-    <div className="text-center">
+    <div className="text-center w-6/12">
       <h1>{zoomlie.name}</h1>
-      <Zoolie width="20rem" />
+      <div className="flex align-center justify-center">
+        <Zoolie width="20rem" />
+      </div>
       <div>
         {zoomlie.properties.map((p) => (
           <div key={p.name}>
@@ -105,26 +107,25 @@ export function Zoolies() {
 
   return (
     <div className="flex flex-row">
-      <div className="w-4/12 bg-blue-300">
+      <div className="w-3/12 bg-gray-900 pt-5">
         {list.map((item) => (
           <div // eslint-disable-line jsx-a11y/no-static-element-interactions
             key={item.id}
-            className="flex flex-row p-2"
+            className="flex flex-row p-2 justify-around hover"
             onClick={(e) => {
               e.preventDefault();
               setZoomlie(item);
             }}
             onKeyDown={() => {}}
           >
-            <div>
-              {item.name} {item.level}
-            </div>
+            <div>{item.name}</div>
+            <div> {item.level}</div>
           </div>
         ))}
       </div>
       <Zoomlie zoomlie={zoomlie} />
-      <div className="w-4/12 h-full">
-        <div>Inventory</div>
+      <div className="w-3/12 bg-gray-900 p-5">
+        <div className="text-center pb-5">Inventory</div>
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-1">01</div>
           <div className="col-span-1">02</div>
