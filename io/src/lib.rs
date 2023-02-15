@@ -50,8 +50,8 @@ pub enum Event {
     Claimed(u128),
     ReadyToChallenge,
     ChallengeResult,
-    Created(u64),
-    Minted(ActorId),
+    Created(MonsterId),
+    Minted(MonsterId),
 }
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug, Default)]
@@ -78,6 +78,7 @@ pub struct Farm {
 pub struct Account {
     pub id: ActorId,
     pub name: String,
+    // unused; use Contract.monster_owner instead
     pub monsters: Vec<Monster>,
 }
 
@@ -89,6 +90,17 @@ pub struct Monster {
     pub characteristics: Characteristics,
     pub energy: u32,
     pub level: u32,
+}
+
+pub type MonsterId = u64;
+
+pub type OrderId = u32;
+
+#[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug, Default)]
+pub struct Order {
+    pub monster_id: MonsterId,
+    pub price: u128,
+    pub buyer: ActorId,
 }
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug)]

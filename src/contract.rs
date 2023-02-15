@@ -13,12 +13,18 @@ type EncodedNft = Vec<u8>;
 
 #[derive(Clone, Debug, Default)]
 pub struct Contract {
-    verification_data: HashMap<u64, (Signature, EncodedNft)>,
+    verification_data: HashMap<MonsterId, (Signature, EncodedNft)>,
     accounts: HashMap<ActorId, Monster>,
     farms: HashMap<ActorId, Farm>,
     arena: HashMap<ActorId, Option<ActorId>>,
     leader_board: HashMap<ActorId, u128>,
+    monster_registry: HashMap<MonsterId, Monster>,
+    monster_owner: HashMap<MonsterId, Option<ActorId>>,
     // market: HashMap<ActorId, Order>, // nft-marketplace
+    order_registry: HashMap<OrderId, Order>,
+    // monster, buyer, order
+    // a monster can receive orders created by multiple buyers
+    order_by_monster: HashMap<MonsterId, HashMap<ActorId, OrderId>>,
 }
 
 static mut STATE: Option<Contract> = None;
@@ -83,7 +89,7 @@ extern "C" fn metahash() {
 }
 
 impl Contract {
-    pub fn mint(&mut self, id: u64, private_key: &[u8]) -> Result<Event, Error> {
+    pub fn mint(&mut self, id: MonsterId, private_key: &[u8]) -> Result<Event, Error> {
         let secret_key = SecretKey::from_slice(private_key).map_err(|_| Error::IllegalKey)?;
 
         match self.verification_data.get(&id) {
@@ -107,11 +113,13 @@ impl Contract {
                     level: 0,
                 };
                 // self.accounts.insert(player_id, v)
-                Ok(Event::Minted(nft_contract_id))
+                self.monster_registry.insert(id, monster);
+                // Ok(Event::Minted(nft_contract_id))
+                self.transfer_monster_to(id, &player_id);
+                Ok(Event::Minted(id))
             }
             None => return Err(Error::IllegalKey),
         }
-
     }
 
     pub fn create(
@@ -121,7 +129,7 @@ impl Contract {
     ) -> Result<Event, Error> {
         gstd::debug!("create() {:?}, {:?}", signature, signed_nft_program_id);
         let signature = Signature::from_slice(signature).map_err(|_| Error::IllegalKey)?;
-        let id = self.verification_data.len() as u64;
+        let id: MonsterId = self.verification_data.len() as u64 as MonsterId;
         self.verification_data
             .insert(id, (signature, signed_nft_program_id));
 
@@ -139,9 +147,48 @@ impl Contract {
         Ok(Event::Claimed(999))
     }
 
-    pub fn order(&mut self) {}
+    pub fn order(&mut self, id: MonsterId, price: u128) {
+        let player_id = msg::source();
+        let order = Order {
+            monster_id: id,
+            price: price,
+            buyer: player_id,
+        };
+        // register order
+        let order_id = self.order_registry.len() as u32;
+        self.order_registry.insert(order_id, order);
 
-    pub fn accept_order(&mut self) {}
+        // TODO: insert order into order_by_monster
+
+        // self.order_by_monster.insert(...);
+    }
+
+    pub fn accept_order(&mut self, id: OrderId) {
+        let order = self.order_registry.get(&id);
+        let order = order.cloned().unwrap();
+
+        let current_owner = self.monster_owner.get(&order.monster_id);
+        let current_owner = current_owner.unwrap().unwrap();
+
+        // ensure player is current owner
+        let player_id = msg::source();
+        if player_id != current_owner {
+            panic!("only current owner can accept offer")
+        }
+
+        // transfer ownership of monster
+        self.transfer_monster_to(order.monster_id, &order.buyer);
+
+        // TODO: transfer balance from buyer to seller
+
+        // TODO: remove order from order_registry and order_by_owner
+
+        // TODO: emit event
+    }
+
+    fn transfer_monster_to(&mut self, monster: MonsterId, to: &ActorId) -> () {
+        self.monster_owner.insert(monster, Some(*to));
+    }
 
     pub fn make_challenge(&mut self, enemy: &Option<ActorId>) -> Result<Event, Error> {
         match enemy {
