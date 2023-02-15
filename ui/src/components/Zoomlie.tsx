@@ -107,7 +107,15 @@ export function Zoolies() {
     <div className="flex flex-row">
       <div className="w-4/12 bg-blue-300">
         {list.map((item) => (
-          <div key={item.id} className="flex flex-row p-2">
+          <div // eslint-disable-line jsx-a11y/no-static-element-interactions
+            key={item.id}
+            className="flex flex-row p-2"
+            onClick={(e) => {
+              e.preventDefault();
+              setZoomlie(item);
+            }}
+            onKeyDown={() => {}}
+          >
             <div>
               {item.name} {item.level}
             </div>
