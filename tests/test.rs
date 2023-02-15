@@ -79,3 +79,52 @@ fn mint() {
 
     assert!(result.contains(&Log::builder().payload(Event::Minted)));
 }
+
+pub fn init_nft(sys: &System, owner: u64) {
+    let nft_program = Program::from_file(sys, "./target/nft-0.2.5.opt.wasm");
+
+    let res = nft_program.send(
+        owner,
+        nft_io::InitNFT {
+            name: String::from("MyToken"),
+            symbol: String::from("MTK"),
+            base_uri: String::from(""),
+            royalties: None,
+        },
+    );
+
+    assert!(!res.main_failed());
+
+    let res = nft_program.send(
+        owner,
+        nft_io::NFTAction::Mint {
+            token_metadata: TokenMetadata {
+                name: "MyNFT".to_string(),
+                description: "NFTForAuction".to_string(),
+                media: "".to_string(),
+                reference: "".to_string(),
+            },
+            transaction_id: 0u64,
+        },
+    );
+
+    assert!(!res.main_failed());
+
+    let res = nft_owner(&nft_program, owner, 0.into());
+    let log = Log::builder().dest(owner).payload(nft_io::NFTEvent::Owner {
+        owner: owner.into(),
+        token_id: 0.into(),
+    });
+    assert!(res.contains(&log));
+
+    let res = nft_program.send(
+        owner,
+        nft_io::NFTAction::Approve {
+            to: 1.into(),
+            token_id: 0.into(),
+            transaction_id: 0u64,
+        },
+    );
+
+    assert!(!res.main_failed());
+}
