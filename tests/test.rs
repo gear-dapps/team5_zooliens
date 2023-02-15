@@ -6,6 +6,8 @@ const SEED: [u8; 32] = [5u8; 32];
 
 const DATA: [u8; 32] = [9u8; 32];
 
+const USER: [u64; 6] = [4, 5, 6, 7, 8, 9];
+
 #[test]
 fn create() {
     let system = System::new();
@@ -46,7 +48,7 @@ fn mint() {
     system.init_logger();
 
     let program = Program::current(&system);
-    let mut result = program.send_bytes(2, []);
+    let mut result = program.send_bytes(USER[0], []);
 
     assert!(!result.main_failed());
 
@@ -64,11 +66,11 @@ fn mint() {
 
     let action = Action::Create(payload);
 
-    let result = program.send(2, action);
+    let result = program.send(USER[1], action);
     assert!(result.contains(&Log::builder().payload(Event::Created(0))));
 
     let result = program.send(
-        2,
+        USER[1],
         Action::Mint(Mint {
             id: 0,
             private_key: secret_key.to_vec(),
