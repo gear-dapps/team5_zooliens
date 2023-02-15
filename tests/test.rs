@@ -41,8 +41,6 @@ fn create() {
 
         assert!(result.contains(&Log::builder().payload(Event::Created(ActorId::from(i as u64)))));
     }
-
-    // assert!(result.log().is_empty());
 }
 
 #[test]
