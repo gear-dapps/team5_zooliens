@@ -1,6 +1,11 @@
 /* eslint-disable */
+import { useSearchParams } from "react-router-dom";
 
-function Submit() {
+function Mint() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const id = searchParams.get("id");
+  const key = searchParams.get("key");
+
   return (
     <>
       <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -22,6 +27,7 @@ function Submit() {
                     autoComplete="email"
                     required
                     className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                    defaultValue={id ? id : ""}
                   />
                 </div>
               </div>
@@ -41,6 +47,7 @@ function Submit() {
                     autoComplete="current-password"
                     required
                     className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                    defaultValue={key ? key : ""}
                   />
                 </div>
               </div>
@@ -61,4 +68,4 @@ function Submit() {
   );
 }
 
-export { Submit };
+export { Mint };

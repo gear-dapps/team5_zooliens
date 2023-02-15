@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router-dom";
 import { Home } from "./home";
 import { Adventure } from "./adventure";
-import { Submit } from "./submit";
+import { Mint } from "./mint";
 
 const routes = [
   { path: "/", Page: Home },
   { path: "/adventure", Page: Adventure },
-  { path: "/submit", Page: Submit },
+  { path: "/mint", Page: Mint },
 ];
 
 function Routing() {

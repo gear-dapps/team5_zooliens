@@ -12,7 +12,7 @@ function Header({ isAccountVisible }: Props) {
     <header className={styles.header}>
       <Logo />
       <Link to="/adventure">Adventure</Link>
-      <Link to="/submit">Submit</Link>
+      <Link to="/mint">Mint</Link>
       {isAccountVisible && <Account />}
     </header>
   );
