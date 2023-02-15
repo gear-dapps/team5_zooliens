@@ -35,11 +35,13 @@ dependencies = [
  "app-io",
  "app-state",
  "ed25519-compact",
+ "gear-lib",
  "gear-wasm-builder",
  "gmeta",
  "gstd",
  "gtest",
  "hashbrown 0.13.2",
+ "nft-io 0.2.8",
  "tokio",
 ]
 
@@ -49,7 +51,7 @@ version = "0.1.0"
 dependencies = [
  "gmeta",
  "gstd",
- "nft-io",
+ "nft-io 0.2.7",
  "parity-scale-codec",
  "primitive-types",
  "scale-info",
@@ -870,6 +872,17 @@ version = "0.2.7"
 source = "git+https://github.com/gear-dapps/non-fungible-token.git?tag=0.2.7#18ba97c2546205994b8a28825ce2495c00bc3a97"
 dependencies = [
  "gear-lib",
+ "gstd",
+ "primitive-types",
+]
+
+[[package]]
+name = "nft-io"
+version = "0.2.8"
+source = "git+https://github.com/gear-dapps/non-fungible-token.git?tag=0.2.8#4a638d462e61760d11ba6fbe2b1f886c5b8f7dbb"
+dependencies = [
+ "gear-lib",
+ "gmeta",
  "gstd",
  "primitive-types",
 ]

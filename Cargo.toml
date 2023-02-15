@@ -11,6 +11,8 @@ gstd = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
 gmeta = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
 hashbrown = "0.13"
 ed25519-compact = { version = "2.0.4", default-features = false }
+nft-io = { git = "https://github.com/gear-dapps/non-fungible-token.git", tag = "0.2.8" }
+gear-lib = { git = "https://github.com/gear-dapps/gear-lib.git", tag = "0.3.4" }
 
 [build-dependencies]
 app-io = { path = "io" }
