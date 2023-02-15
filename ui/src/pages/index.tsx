@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Home } from "./home";
-import { Adventure } from "./Adventure";
+import { Adventure } from "./adventure";
 
 const routes = [
   { path: "/", Page: Home },
