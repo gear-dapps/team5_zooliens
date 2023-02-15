@@ -11,12 +11,14 @@ function Farm() {
 
   return (
     <div className="flex flex-row">
-      <div className="w-4/12 bg-blue-300">
+      <div className="w-4/12 bg-gray-700">
         {buildings.map((item) => (
-          <div key={item.name} className="flex flex-row p-2 hover">
-            <div>
-              {item.name} +{item.value}
-            </div>
+          <div
+            key={item.name}
+            className="flex flex-row p-5 hover justify-around"
+          >
+            <div>{item.name}</div>
+            <div> +{item.value}</div>
           </div>
         ))}
       </div>
