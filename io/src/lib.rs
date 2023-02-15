@@ -34,7 +34,7 @@ pub enum Action {
 
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Debug)]
 pub struct Mint {
-    pub id: u64,
+    pub nft_contract_id: ActorId,
     pub private_key: Vec<u8>,
 }
 
@@ -50,7 +50,7 @@ pub enum Event {
     Claimed(u128),
     ReadyToChallenge,
     ChallengeResult,
-    Created(u64),
+    Created(ActorId),
     Minted(ActorId),
 }
 

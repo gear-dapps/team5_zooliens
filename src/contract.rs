@@ -1,23 +1,20 @@
 use app_io::*;
 use ed25519_compact::{SecretKey, Signature};
 use gmeta::Metadata;
-use gstd::{
-    errors::{ContractError, Result as GstdResult},
-    msg,
-    prelude::*,
-    ActorId, MessageId,
-};
+use gstd::{errors::Result as GstdResult, msg, prelude::*, util, ActorId, MessageId};
 use hashbrown::HashMap;
+use nft_io::NFTAction;
+use primitive_types::U256;
 
 type EncodedNft = Vec<u8>;
 
 #[derive(Clone, Debug, Default)]
 pub struct Contract {
-    verification_data: HashMap<u64, (Signature, EncodedNft)>,
+    verification_data: HashMap<ActorId, (Signature, EncodedNft)>,
     accounts: HashMap<ActorId, Monster>,
-    farms: HashMap<ActorId, Farm>,
     arena: HashMap<ActorId, Option<ActorId>>,
-    leader_board: HashMap<ActorId, u128>,
+    // leader_board: HashMap<ActorId, u128>,
+    // farms: HashMap<ActorId, Farm>,
     // market: HashMap<ActorId, Order>, // nft-marketplace
 }
 
@@ -45,12 +42,15 @@ async fn main() {
             signature,
             signed_data,
         }) => contract.create(&signature, signed_data),
-        Action::Mint(Mint { id, private_key }) => contract.mint(id, &private_key),
+        Action::Mint(Mint {
+            nft_contract_id,
+            private_key,
+        }) => contract.mint(nft_contract_id, &private_key).await,
         Action::ProfileInfo(actor_id) => contract.profile_info(&actor_id),
         Action::ToChallenge(enemy) => contract.make_challenge(&enemy),
 
         Action::Claim(actor) => contract.claim(&actor),
-        Action::Order(item) => todo!(),
+        Action::Order(_item) => todo!(),
         Action::AcceptOrder => todo!(),
         Action::LeaveChallenge(_) => todo!(),
     };
@@ -67,23 +67,26 @@ fn common_state() -> <ContractMetadata as Metadata>::State {
 
 #[no_mangle]
 extern "C" fn meta_state() -> *const [i32; 2] {
-    // let query = msg::load().expect("Failed to load or decode `StateQuery` from `meta_state()`");
-    // let state = common_state();
+    let state = common_state();
 
-    // util::to_leak_ptr(reply.encode())
-    &[0, 0]
+    util::to_leak_ptr(state.encode())
 }
 
 #[no_mangle]
-extern "C" fn state() {}
+extern "C" fn state() {
+    reply(common_state()).expect(
+        "Failed to encode or reply with `<AuctionMetadata as Metadata>::State` from `state()`",
+    );
+}
 
 #[no_mangle]
 extern "C" fn metahash() {
     let metahash: [u8; 32] = include!("../.metahash");
+    reply(metahash).expect("Failed to encode or reply with `[u8; 32]` from `metahash()`");
 }
 
 impl Contract {
-    pub fn mint(&mut self, id: u64, private_key: &[u8]) -> Result<Event, Error> {
+    pub async fn mint(&mut self, id: ActorId, private_key: &[u8]) -> Result<Event, Error> {
         let secret_key = SecretKey::from_slice(private_key).map_err(|_| Error::IllegalKey)?;
 
         match self.verification_data.get(&id) {
@@ -106,12 +109,25 @@ impl Contract {
                     energy: 100,
                     level: 0,
                 };
-                // self.accounts.insert(player_id, v)
+
+                msg::send_for_reply(
+                    nft_contract_id.clone(),
+                    NFTAction::Transfer {
+                        to: player_id,
+                        token_id: U256::from(0),
+                        transaction_id: 0,
+                    },
+                    0,
+                )
+                .unwrap()
+                .await
+                .expect("Error in nft transfer");
+
+                self.accounts.insert(player_id, monster);
                 Ok(Event::Minted(nft_contract_id))
             }
             None => return Err(Error::IllegalKey),
         }
-
     }
 
     pub fn create(
@@ -121,7 +137,8 @@ impl Contract {
     ) -> Result<Event, Error> {
         gstd::debug!("create() {:?}, {:?}", signature, signed_nft_program_id);
         let signature = Signature::from_slice(signature).map_err(|_| Error::IllegalKey)?;
-        let id = self.verification_data.len() as u64;
+        // let id = self.verification_data.len() as u64;
+        let id = ActorId::from_slice(&signed_nft_program_id).unwrap();
         self.verification_data
             .insert(id, (signature, signed_nft_program_id));
 
@@ -135,13 +152,9 @@ impl Contract {
         }
     }
 
-    pub fn claim(&mut self, actor: &ActorId) -> Result<Event, Error> {
+    pub fn claim(&mut self, _actor: &ActorId) -> Result<Event, Error> {
         Ok(Event::Claimed(999))
     }
-
-    pub fn order(&mut self) {}
-
-    pub fn accept_order(&mut self) {}
 
     pub fn make_challenge(&mut self, enemy: &Option<ActorId>) -> Result<Event, Error> {
         match enemy {
@@ -150,6 +163,8 @@ impl Contract {
         };
         Ok(Event::ReadyToChallenge)
     }
+}
 
-    pub fn leader_board(&self) {}
+fn reply(payload: impl Encode) -> GstdResult<MessageId> {
+    msg::reply(payload, 0)
 }

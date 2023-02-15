@@ -42,6 +42,7 @@ dependencies = [
  "gtest",
  "hashbrown 0.13.2",
  "nft-io 0.2.8",
+ "primitive-types",
  "tokio",
 ]
 
