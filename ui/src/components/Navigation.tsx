@@ -1,9 +1,7 @@
 import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import styles from "@/styles/nav.module.css";
-import { useRouter } from "next/router";
-import Image from "next/image";
-import NoSSR from "./NoSSR";
+// import NoSSR from "./NoSSR";
 
 const LOGO = "/zoo-logo-color.svg ";
 
@@ -13,19 +11,11 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Nav() {
-  return (
-    <NoSSR>
-      <InnerNav />
-    </NoSSR>
-  );
-}
-
-export function InnerNav() {
-  const router = useRouter();
+export default function InnerNav() {
+  // const router = useRouter();
   const navigate = (e: any, url: string) => {
-    e.preventDefault();
-    router.push(url);
+    // e.preventDefault();
+    // router.push(url);
   };
 
   return (
@@ -47,7 +37,7 @@ export function InnerNav() {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <Image
+                  <img
                     className="block h-10 w-auto lg:hidden"
                     height={50}
                     width={50}
@@ -55,7 +45,7 @@ export function InnerNav() {
                     alt="Zooliens Home Page"
                     onClick={(e) => navigate(e, "/")}
                   />
-                  <Image
+                  <img
                     height={50}
                     width={50}
                     className={classNames(

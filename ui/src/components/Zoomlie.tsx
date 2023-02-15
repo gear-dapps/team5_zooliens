@@ -1,27 +1,24 @@
-import Image from "next/image";
-import styles from "@/styles/zoomlie.module.css";
 import { useState } from "react";
-
-const HERO = "/blue-hero.svg";
+import { ReactComponent as Zoolie } from "assets/images/zoolie.svg";
 
 interface Property {
   name: string;
   value: number;
 }
 
-interface Zoomlie {
+interface IZoomlie {
   id: string;
   name: string;
   level: number;
   properties: Property[];
 }
 
-export function Zoomlie({ zoomlie }: { zoomlie: Zoomlie }) {
+export function Zoomlie({ zoomlie }: { zoomlie: IZoomlie }) {
   return (
-    <div className={styles.zoomlie}>
+    <div className="text-center">
       <h1>{zoomlie.name}</h1>
-      <Image height={500} width={300} src={HERO} alt="Hero" />
-      <div className={styles.properties}>
+      <Zoolie width="20rem" />
+      <div>
         {zoomlie.properties.map((p) => (
           <div key={p.name}>
             {p.name}: {p.value}
@@ -32,8 +29,8 @@ export function Zoomlie({ zoomlie }: { zoomlie: Zoomlie }) {
   );
 }
 
-export default function Zoomlies() {
-  const list: Zoomlie[] = [
+export function Zoolies() {
+  const list: IZoomlie[] = [
     {
       id: "1",
       name: "ROOGEDY-1",
@@ -110,11 +107,7 @@ export default function Zoomlies() {
     <div className="flex flex-row">
       <div className="w-4/12 bg-blue-300">
         {list.map((item) => (
-          <div
-            key={item.id}
-            className={`flex flex-row p-2`}
-            onClick={() => setZoomlie(item)}
-          >
+          <div key={item.id} className="flex flex-row p-2">
             <div>
               {item.name} {item.level}
             </div>
